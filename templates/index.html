@@ -6,11 +6,16 @@
     <title>Play Spotify Song</title>
 </head>
 <body>
-    <h1>Play a Song on Spotify</h1>
-    <form action="/play" method="post">
-        <label for="track_uri">Enter Spotify URI:</label>
-        <input type="text" id="track_uri" name="track_uri" placeholder="spotify:track:URI">
+    <h1>Retrieve Songs</h1>
+    <!-- Play a Song on Spotify -->
+    <form action="/songsRetrieve" method="post"> 
+        <!-- "/play" -->
+        <label for="bpm">Enter Spotify URI:</label>
+        <!-- track_uri -->
+        <input type="text" id="bpm" name="bpm" placeholder="bpm">
+        <!-- spotify:track:URI -->
         <button type="submit">Play</button>
     </form>
+
 </body>
 </html>
