@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-import spotipy
+from spotipy import *
 from spotipy.oauth2 import SpotifyOAuth
 
 app = Flask(__name__)
@@ -30,7 +30,7 @@ def play_song():
     if not token_info:
         return redirect(url_for('authorize'))
     
-    sp = spotipy.Spotify(auth=token_info['access_token'])
+    sp = Spotify(auth=token_info['access_token'])
     
     # Play the track
     try:
