@@ -39,6 +39,47 @@ def play_song():
     except Exception as e:
         return str(e)
 
+
+
+@app.route("/songsRetrieve", methods=['POST'])
+def retrieve():
+    bpm = request.form['bpm']
+    # Get Spotify token
+    token_info = sp_oauth.get_cached_token()
+    if not token_info:
+        return redirect(url_for('authorize'))
+    
+    sp = Spotify(auth=token_info['access_token'])
+
+    def get_artist_ids(artist_names):
+        artist_ids = []
+        for name in artist_names:
+            results = sp.search(q=name, type='artist', limit=1)
+            if results['artists']['items']:
+                artist_ids.append(results['artists']['items'][0]['id'])
+        print(artist_ids)
+        return artist_ids
+
+    # Get artist IDs for Karan Aujla and Diljit Dosanjh
+    artist_names = ['Karan Aujla'] #'Diljit Dosanjh', 'Arijit Singh', 'Badshah'
+    
+    seed_artist_ids = get_artist_ids(artist_names)
+    # Suggest songs
+    recommendations = sp.recommendations(
+        limit=100,
+        seed_artists = seed_artist_ids,
+        min_tempo=bpm,# Example seed genre
+    )
+    # for track in recommendations['tracks']:
+    #     print(f"Track Name: {track['name']}, Artist: {track['artists'][0]['name']}") #Tempo: {track['tempo']}
+
+    track_uri = recommendations['tracks'][0]["uri"]
+    try:
+        sp.start_playback(uris=[track_uri])
+        return "Playing song!"
+    except Exception as e:
+        return str(e)
+
 @app.route('/authorize')
 def authorize():
     auth_url = sp_oauth.get_authorize_url()
