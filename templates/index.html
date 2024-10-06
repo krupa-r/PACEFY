@@ -12,21 +12,22 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ isRunning: true })
+                body: JSON.stringify({ 'isRunning': true })
             }).then(response => response.json())
               .then(data => document.getElementById('status').innerText = data.message);
-        }
+        }       
 
         // Function to handle stop button click
         function stop() {
-            fetch('/songsRetrieve', {
+            fetch('/stop', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ isRunning: false })
+                body: JSON.stringify({ 'isRunning': false })
             }).then(response => response.json())
               .then(data => document.getElementById('status').innerText = data.message);
+            console.log()
         }
     </script>
 </head>
