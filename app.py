@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 from spotipy import *
 from spotipy.oauth2 import SpotifyOAuth
+import time
 
 app = Flask(__name__)
 
@@ -40,10 +41,12 @@ def play_song():
         return str(e)
 
 
+is_running = False
 
 @app.route("/songsRetrieve", methods=['POST'])
 def retrieve():
-    bpm = request.form['bpm']
+    global is_running
+    bpm = 100
     # Get Spotify token
     token_info = sp_oauth.get_cached_token()
     if not token_info:
@@ -51,13 +54,16 @@ def retrieve():
     
     sp = Spotify(auth=token_info['access_token'])
 
+    data = request.get_json()
+    is_running = data.get('isRunning', False)  # Get the value from the frontend
+
+    
     def get_artist_ids(artist_names):
         artist_ids = []
         for name in artist_names:
             results = sp.search(q=name, type='artist', limit=1)
             if results['artists']['items']:
                 artist_ids.append(results['artists']['items'][0]['id'])
-        print(artist_ids)
         return artist_ids
 
     # Get artist IDs for Karan Aujla and Diljit Dosanjh
@@ -73,12 +79,21 @@ def retrieve():
     # for track in recommendations['tracks']:
     #     print(f"Track Name: {track['name']}, Artist: {track['artists'][0]['name']}") #Tempo: {track['tempo']}
 
-    track_uri = recommendations['tracks'][0]["uri"]
-    try:
-        sp.start_playback(uris=[track_uri])
-        return "Playing song!"
-    except Exception as e:
-        return str(e)
+
+    #return recommendations["tracks"]
+    
+    i = 0
+    while is_running and i<100: 
+        track_uri = recommendations['tracks'][i]["uri"]
+        try:
+            sp.start_playback(uris=[track_uri])
+            i+=1
+            time.sleep(15)
+            data = request.get_json()
+            is_running = data.get('isRunning', False) 
+        except Exception as e:
+            return str(e)
+    return "Thank You"
 
 @app.route('/authorize')
 def authorize():

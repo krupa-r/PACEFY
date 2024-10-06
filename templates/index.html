@@ -3,19 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Play Spotify Song</title>
+    <title>Start/Stop Control</title>
+    <script>
+        // Function to handle start button click
+        function start() {
+            fetch('/songsRetrieve', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ isRunning: true })
+            }).then(response => response.json())
+              .then(data => document.getElementById('status').innerText = data.message);
+        }
+
+        // Function to handle stop button click
+        function stop() {
+            fetch('/songsRetrieve', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ isRunning: false })
+            }).then(response => response.json())
+              .then(data => document.getElementById('status').innerText = data.message);
+        }
+    </script>
 </head>
 <body>
-    <h1>Retrieve Songs</h1>
-    <!-- Play a Song on Spotify -->
-    <form action="/songsRetrieve" method="post"> 
-        <!-- "/play" -->
-        <label for="bpm">Enter Spotify URI:</label>
-        <!-- track_uri -->
-        <input type="text" id="bpm" name="bpm" placeholder="bpm">
-        <!-- spotify:track:URI -->
-        <button type="submit">Play</button>
-    </form>
-
+    <h1>Control Start/Stop</h1>
+    <button onclick="start()">Start</button>
+    <button onclick="stop()">Stop</button>
+    <p id="status">Status: Unknown</p>
 </body>
 </html>
