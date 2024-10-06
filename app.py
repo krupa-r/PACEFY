@@ -63,10 +63,10 @@ def retrieve():
                 artist_ids.append(results['artists']['items'][0]['id'])
         return artist_ids
 
-    artist_names = ["Karan Aujla"]
+    artist_names = ["50 Cent", "Eminen", "Diljit Dosanjh", "Arijit Singh", "One Direction"]
     seed_artist_ids = get_artist_ids(artist_names)
     
-    recommendations = sp.recommendations(limit=100, seed_artists=seed_artist_ids, min_tempo=bpm)
+    recommendations = sp.recommendations(limit=100, seed_artists=seed_artist_ids,  min_tempo=bpm) 
 
     data = request.get_json()
     is_running = data.get('isRunning')
@@ -75,13 +75,13 @@ def retrieve():
         track_uri = recommendations['tracks'][i]["uri"]
         sp.start_playback(uris=[track_uri])
         
-        time.sleep(15)
+        time.sleep(30)
         i += 1
         
         if not is_running:
             break
 
-    return "Finished Running Successfully"
+    return {"message": "Finished Running successfully"}
 
 @app.route("/stop", methods=['POST'])
 def stop():
