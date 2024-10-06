@@ -62,23 +62,43 @@ def retrieve():
 
     # Get artist IDs for Karan Aujla and Diljit Dosanjh
     artist_names = ['Karan Aujla'] #'Diljit Dosanjh', 'Arijit Singh', 'Badshah'
-    
     seed_artist_ids = get_artist_ids(artist_names)
+
     # Suggest songs
     recommendations = sp.recommendations(
         limit=100,
         seed_artists = seed_artist_ids,
         min_tempo=bpm,# Example seed genre
     )
-    # for track in recommendations['tracks']:
-    #     print(f"Track Name: {track['name']}, Artist: {track['artists'][0]['name']}") #Tempo: {track['tempo']}
 
     track_uri = recommendations['tracks'][0]["uri"]
-    try:
-        sp.start_playback(uris=[track_uri])
-        return "Playing song!"
-    except Exception as e:
-        return str(e)
+
+    #Extract urls for the image for the songs
+    image_urls = []
+    for track in recommendations['tracks']:
+        if 'album' in track and 'images' in track['album']:
+            if track['album']['images']:
+                image_urls.append(track['album']['images'][0]['url'])
+
+    # return{"image_urls":image_urls}
+
+    #Extract urls for the songs
+    song_urls = []
+    for track in recommendations['tracks']:
+        if 'external_urls' in track:
+                song_urls.append(track['external_urls']['spotify'])
+
+    # return{"song_urls":song_urls}
+
+    # image_urls = [item['images']['url'] for item in track_uri]
+    # return image_urls
+    # try:
+    #     sp.start_playback(uris=[track_uri])
+    #     return "Playing song!"
+    # except Exception as e:
+    #     return str(e)
+
+    return recommendations['tracks']
 
 @app.route('/authorize')
 def authorize():
