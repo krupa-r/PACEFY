@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for
 from spotipy import *
 from spotipy.oauth2 import SpotifyOAuth
 import time
+import random
 
 app = Flask(__name__)
 
@@ -43,20 +44,16 @@ def play_song():
 
 is_running = False
 
-@app.route("/songsRetrieve", methods=['POST'])
+@app.route("/songsRetrieve", methods=['POST', 'GET'])
 def retrieve():
     global is_running
     bpm = 100
-    # Get Spotify token
+    
     token_info = sp_oauth.get_cached_token()
     if not token_info:
         return redirect(url_for('authorize'))
     
     sp = Spotify(auth=token_info['access_token'])
-
-    data = request.get_json()
-    is_running = data.get('isRunning', False)  # Get the value from the frontend
-
     
     def get_artist_ids(artist_names):
         artist_ids = []
@@ -66,56 +63,43 @@ def retrieve():
                 artist_ids.append(results['artists']['items'][0]['id'])
         return artist_ids
 
-    # Get artist IDs for Karan Aujla and Diljit Dosanjh
-    artist_names = ['Karan Aujla'] #'Diljit Dosanjh', 'Arijit Singh', 'Badshah'
+    artist_names = ["Karan Aujla"]
     seed_artist_ids = get_artist_ids(artist_names)
-
-    # Suggest songs
-    recommendations = sp.recommendations(
-        limit=100,
-        seed_artists = seed_artist_ids,
-        min_tempo=bpm,# Example seed genre
-    )
-
-    track_uri = recommendations['tracks'][0]["uri"]
-
-    #Extract urls for the image for the songs
-    image_urls = []
-    for track in recommendations['tracks']:
-        if 'album' in track and 'images' in track['album']:
-            if track['album']['images']:
-                image_urls.append(track['album']['images'][0]['url'])
-
-    # return{"image_urls":image_urls}
-
-    #Extract urls for the songs
-    song_urls = []
-    for track in recommendations['tracks']:
-        if 'external_urls' in track:
-                song_urls.append(track['external_urls']['spotify'])
-
-    # return{"song_urls":song_urls}
-
-    # try:
-    #     sp.start_playback(uris=[track_uri])
-    #     return "Playing song!"
-    # except Exception as e:
-    #     return str(e)
-
-    #return recommendations["tracks"]
     
+    recommendations = sp.recommendations(limit=100, seed_artists=seed_artist_ids, min_tempo=bpm)
+
+    data = request.get_json()
+    is_running = data.get('isRunning')
     i = 0
-    while is_running and i<100: 
+    while is_running and i < 100:
         track_uri = recommendations['tracks'][i]["uri"]
-        try:
-            sp.start_playback(uris=[track_uri])
-            i+=1
-            time.sleep(15)
-            data = request.get_json()
-            is_running = data.get('isRunning', False) 
-        except Exception as e:
-            return str(e)
-    return "Thank You"
+        sp.start_playback(uris=[track_uri])
+        
+        time.sleep(15)
+        i += 1
+        
+        if not is_running:
+            break
+
+    return "Finished Running Successfully"
+
+@app.route("/stop", methods=['POST'])
+def stop():
+    global is_running
+    
+    # Get Spotify token
+    token_info = sp_oauth.get_cached_token()
+    if not token_info:
+        return redirect(url_for('authorize'))
+    
+    sp = Spotify(auth=token_info['access_token'])
+    
+    # Pause the playback
+    sp.pause_playback()  
+    is_running = False  
+    return {"message": "Playback stopped successfully"}
+
+
 
 @app.route('/authorize')
 def authorize():
